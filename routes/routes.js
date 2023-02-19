@@ -36,21 +36,14 @@ router.get("/destinations/:destinationId", getOneDestination);
 router.put("/destinations/:destinationId", updateDestination);
 router.delete("/destinations/:destinationId", deleteDestination);
 
-async function fetchData(url) {
-  const data = await axios.get(url);
-  // console.log(data);
-  return data;
-}
-
 router.post("/server/incoming_data", async function pushData(req, res) {
   try {
-    console.log("✨✨✨✨✨");
-    console.log(req.headers["cl-x-token"]);
+    // console.log("✨✨✨✨✨");
+    // console.log(req.headers["cl-x-token"]);
     if (req.headers["cl-x-token"]) {
-      // Decrypt the clxtoken and find the accountID.
       const decryptedAccountId = decryptData(req.headers["cl-x-token"]);
-      console.log("✨✨✨✨✨");
-      console.log(decrypted);
+      // console.log("✨✨✨✨✨");
+      // console.log(decryptedAccountId);
       const accountDetails = await Accounts.findAndCountAll({ where: { accountId: decryptedAccountId } });
 
       if (accountDetails.count === 1) {
@@ -61,16 +54,21 @@ router.post("/server/incoming_data", async function pushData(req, res) {
 
         const temp = JSON.parse(JSON.stringify(destinationDetails));
 
-        const responses = await Promise.all(
+        const responses = [];
+
+        await Promise.all(
           temp.map(async (destination) => {
             console.log("✨✨✨✨ Making the axios call");
-            console.log(req.body);
             const { data } = await axios.post(destination.url, { ...req.body });
-            // const { data } = await axios.post(destination.url);
-            return data;
+
+            const result = data;
+            console.table(result);
+            
+            responses.push(result);
+            console.log(responses);
           })
         );
-        return res.json(responses);
+        return res.status(201).json(responses);
       }
     } else {
       return res.status(401).json("Unauthorized!!");
@@ -83,8 +81,8 @@ router.post("/server/incoming_data", async function pushData(req, res) {
 router.post("/destinations/one/facebook", async function savePost(req, res) {
   try {
     console.log("Saving post to Facebook");
-    console.log(req.body);
-    return res.status(201).json(req.body);
+    // console.log(req.body);
+    return res.status(201).json({ ...req.body, type: "Facebook" });
   } catch (error) {
     return res.status(500).json(error);
   }
@@ -92,8 +90,8 @@ router.post("/destinations/one/facebook", async function savePost(req, res) {
 
 router.post("/destinations/one/discord", async function savePost(req, res) {
   try {
-    console.log(req.body);
-    console.log("Saving post to Dis");
+    console.log("Saving post to Discord");
+    // console.log(req.body);
 
     const webhookClient = new WebhookClient({
       url: "https://discord.com/api/webhooks/1076082111435505724/_cKXomhVvYjcLFbpr5WK1-83cCMzI1DTUYuVn_6wbWmCRx3uXlZM0AVomJI36cxY4mtX",
@@ -108,8 +106,9 @@ router.post("/destinations/one/discord", async function savePost(req, res) {
       avatarURL: "https://i.imgur.com/AfFp7pu.png",
       embeds: [embed],
     });
+    return res.status(201).json({ ...req.body, type: "Discord" });
   } catch (error) {
-    return res.send(500).json(error);
+    return res.status(500).json(error);
   }
 });
 

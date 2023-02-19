@@ -33,7 +33,7 @@ const Destination = sequelize.define("Destination", {
 });
 
 // Define the associations between Destination and Account
-Destination.belongsTo(Accounts);
-Accounts.hasMany(Destination);
+Destination.belongsTo(Accounts, { onDelete: "CASCADE" });
+Accounts.hasMany(Destination, { onDelete: "CASCADE" });
 
 export default Destination;
