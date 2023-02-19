@@ -13,6 +13,7 @@ import {
   getOneDestination,
   updateDestination,
   deleteDestination,
+  getAllDestinationsforAnAccount,
 } from "../controllers/destination.controller.js";
 import Accounts from "../models/accounts.model.js";
 import Destination from "../models/destination.model.js";
@@ -32,18 +33,26 @@ router.delete("/accounts/drop", dropTable);
 
 router.post("/destinations/save", postDestination);
 router.get("/destinations/getAll", getAllDestinations);
+router.get("/destinations/getAll/:accountId", getAllDestinationsforAnAccount);
 router.get("/destinations/:destinationId", getOneDestination);
 router.put("/destinations/:destinationId", updateDestination);
 router.delete("/destinations/:destinationId", deleteDestination);
+
+router.get("/server/incoming_data", async function pushData(req, res) {
+  res.status(400).json("Invalid Data");
+});
 
 router.post("/server/incoming_data", async function pushData(req, res) {
   try {
     // console.log("✨✨✨✨✨");
     // console.log(req.headers["cl-x-token"]);
+    if (!req.is("application/json")) return res.status(400).json("Invalid Data");
+
     if (req.headers["cl-x-token"]) {
       const decryptedAccountId = decryptData(req.headers["cl-x-token"]);
       // console.log("✨✨✨✨✨");
       // console.log(decryptedAccountId);
+
       const accountDetails = await Accounts.findAndCountAll({ where: { accountId: decryptedAccountId } });
 
       if (accountDetails.count === 1) {
@@ -63,7 +72,7 @@ router.post("/server/incoming_data", async function pushData(req, res) {
 
             const result = data;
             console.table(result);
-            
+
             responses.push(result);
             console.log(responses);
           })

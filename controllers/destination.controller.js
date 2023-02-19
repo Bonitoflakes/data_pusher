@@ -27,6 +27,22 @@ const getAllDestinations = (req, res) => {
     });
 };
 
+const getAllDestinationsforAnAccount = (req, res) => {
+  Destination.findAll({
+    where: { accountId: req.params.accountId },
+    attributes: ["url", "headers", "httpMethod"],
+  })
+    .then((data) => {
+      res.send(data);
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Some error occurred while retrieving destinations.",
+        data: data,
+      });
+    });
+};
+
 const getOneDestination = (req, res) => {
   const destinationId = req.params.destinationId;
   Destination.findOne({
@@ -88,4 +104,11 @@ const deleteDestination = (req, res) => {
     });
 };
 
-export { postDestination, getAllDestinations, getOneDestination, updateDestination, deleteDestination };
+export {
+  postDestination,
+  getAllDestinations,
+  getOneDestination,
+  updateDestination,
+  deleteDestination,
+  getAllDestinationsforAnAccount,
+};
