@@ -52,7 +52,7 @@ router.post("/server/incoming_data", async function pushData(req, res) {
       const decryptedAccountId = decryptData(req.headers["cl-x-token"]);
       // console.log("✨✨✨✨✨");
       // console.log(decryptedAccountId);
-
+      
       const accountDetails = await Accounts.findAndCountAll({ where: { accountId: decryptedAccountId } });
 
       if (accountDetails.count === 1) {
